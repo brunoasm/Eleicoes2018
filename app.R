@@ -12,6 +12,20 @@ library(tidyverse)
 library(sf)
 library(ggthemes)
 
+
+#read data
+
+#electoral results
+load('summarized_results.Rdata') 
+#map of zones
+zonas = st_read('SP_ZONAS_janeiro_2018/ZONAS_FINAL.shp') %>%
+  st_simplify(dTolerance = 0.001)
+#map of municipality
+municipios = st_read('SP-MUN/35MUE250GC_SIR.shp') %>%
+  st_simplify(dTolerance = 0.001)
+
+
+
 # Define UI 
 ui <- fluidPage(
   
@@ -36,10 +50,6 @@ ui <- fluidPage(
 # Define server logic 
 server <- function(input, output,session) {
   
-  #ler resultados eleitorais e fazer menus
-  load('summarized_results.Rdata')
-  zonas = st_read('SP_ZONAS_janeiro_2018/ZONAS_FINAL.shp') %>%
-    st_simplify(dTolerance = 0.001)
   
   updateSelectInput(session,
                     'nivel', 
@@ -103,11 +113,7 @@ server <- function(input, output,session) {
     })
   })
   
-  
-  #ler mapa de municipios
-  municipios = st_read('SP-MUN/35MUE250GC_SIR.shp') %>%
-    st_simplify(dTolerance = 0.001)
-  
+
   #plotar mapa
   output$plot1 = renderPlot({
     req(v$map_data)
