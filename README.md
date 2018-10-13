@@ -4,7 +4,12 @@ Esse app pode ser usado para visualizar a votação dos deputados estaduais e fe
 
 Fiz só pra SP porque achei um mapa para as zonas eleitorais, mas seria relativamente fácil ampliar para outros estados se houver mapas disponíveis.
 
-## Fonte dos dados  
+## Servidor web
+Para rodar o app via web:
+https://basmedeiros.shinyapps.io/Deputados_SP/
+
+
+## Fontes de dados  
 
 1. Mapa das zonas eleitorais: https://github.com/mapaslivres/zonas-eleitorais
 2. Mapa dos municípios: http://www.usp.br/nereus/?dados=unidades-federativas
@@ -50,5 +55,5 @@ save(elec_filt,file = 'summarized_results.Rdata')
 ```
 
 
-Feito por Bruno de Medeiros em Outubro/2018
+Criado por Bruno de Medeiros em Outubro/2018
 
