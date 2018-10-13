@@ -88,7 +88,7 @@ server <- function(input, output,session) {
     #plot(1:10,1:10)
     req(v$map_data)
     ggplot(v$map_data) +
-      geom_sf(aes(fill=VOTOS, color= VOTOS)) +
+      geom_sf(aes(fill=VOTOS, color= VOTOS),size=0.1) +
       geom_sf(data=municipios,fill=NA,color='black',size=0.1) +
       scale_fill_viridis_c(aesthetics = c('colour','fill'),
                            trans='sqrt',
