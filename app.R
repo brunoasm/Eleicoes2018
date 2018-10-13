@@ -68,7 +68,7 @@ server <- function(input, output,session) {
     updateSelectizeInput(session,
                          inputId = 'candidato',
                          label = 'Candidato',
-                         choices = nomes)
+                         choices = nomes,options = list(maxOptions = 5000))
   })
   
   #ler mapa de zonas e juntar aos resultados eleitorais
@@ -99,7 +99,6 @@ server <- function(input, output,session) {
   observe({
     req(input$candidato)
     output$tabela_votos = renderDataTable({
-      
       elec_filt %>%
         dplyr::filter(DS_CARGO_PERGUNTA == input$nivel,
                       nome_pt == input$candidato) %>%
@@ -110,7 +109,8 @@ server <- function(input, output,session) {
                   Zona = NR_ZONA,
                   `Votos totais` = VOTOS,
                   `Votos (porcentagem)` = scales::percent(porcentagem))
-    })
+    },
+    options = list(lengthMenu = c(10, 25, 50,100), pageLength = 10))
   })
   
 
