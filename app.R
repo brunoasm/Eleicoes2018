@@ -54,10 +54,7 @@ server <- function(input, output,session) {
       pull(nome_pt) %>%
       fct_drop %>%
       levels
-    
-    a = 1
-    a = 1 
-    
+
     updateSelectizeInput(session,
                          inputId = 'candidato',
                          label = 'Candidato',
