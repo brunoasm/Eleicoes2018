@@ -21,7 +21,7 @@ ui <- fluidPage(
       selectInput('nivel', 'Nível', ''),
       selectizeInput('candidato','Candidato',''),
       tags$div(class="header", checked=NA, tags$p(),
-               tags$p("Source code and manual on github:", tags$a(href="https://github.com/brunoasm/matrix_condenser", "brunoasm/matrix_condenser", target="_blank")))
+               tags$p("Source code on github:", tags$a(href="https://github.com/brunoasm/Eleicoes2018", "brunoasm/Eleicoes2018", target="_blank")))
     ),
     mainPanel(
       plotOutput('plot1')
