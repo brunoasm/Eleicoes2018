@@ -26,6 +26,7 @@ elec_res = read_delim('bweb_1t_SP_101020182030.csv',
                       delim=';',
                       locale = locale(encoding = 'latin1')) %>% 
   dplyr::select(CD_ELEICAO,
+                NM_MUNICIPIO,
                 NR_ZONA,
                 NR_SECAO,
                 CD_CARGO_PERGUNTA,
@@ -33,15 +34,17 @@ elec_res = read_delim('bweb_1t_SP_101020182030.csv',
                 SG_PARTIDO,
                 DS_TIPO_URNA,
                 NM_VOTAVEL,
-                QT_VOTOS)
+                QT_VOTOS,
+                QT_COMPARECIMENTO)
 
 elec_filt = elec_res %>%
   dplyr::filter(DS_TIPO_URNA == 'Apurada',
                 DS_CARGO_PERGUNTA %in% c("Deputado Federal", "Deputado Estadual"),
                 !NM_VOTAVEL %in% c('Branco','Nulo'),
                 !NM_VOTAVEL %in% unique(SG_PARTIDO)) %>%
-  group_by(NR_ZONA, DS_CARGO_PERGUNTA, SG_PARTIDO, NM_VOTAVEL) %>%
-  summarise(VOTOS=sum(QT_VOTOS)) %>%
+  group_by(NM_MUNICIPIO, NR_ZONA, DS_CARGO_PERGUNTA, SG_PARTIDO, NM_VOTAVEL) %>%
+  summarise(VOTOS=sum(QT_VOTOS),
+            porcentagem = VOTOS/sum(QT_COMPARECIMENTO)) %>%
   ungroup() %>%
   rowwise() %>%
   mutate(nome_pt = str_c(NM_VOTAVEL,' (',SG_PARTIDO,')')) %>%
@@ -52,6 +55,8 @@ elec_filt = elec_res %>%
          DS_CARGO_PERGUNTA = as.factor(DS_CARGO_PERGUNTA))
 
 save(elec_filt,file = 'summarized_results.Rdata')
+
+
 ```
 
 

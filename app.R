@@ -20,11 +20,15 @@ ui <- fluidPage(
     sidebarPanel(
       selectInput('nivel', 'Nível', ''),
       selectizeInput('candidato','Candidato',''),
+      selectInput('contagem','Contagem',c('Absoluta','Percentual')),
       tags$div(class="header", checked=NA, tags$p(),
                tags$p("Source code on github:", tags$a(href="https://github.com/brunoasm/Eleicoes2018", "brunoasm/Eleicoes2018", target="_blank")))
     ),
     mainPanel(
-      plotOutput('plot1')
+      tabsetPanel(
+        tabPanel("Mapa",plotOutput('plot1')),
+        tabPanel("Tabela",dataTableOutput(outputId="tabela_votos"))
+        )
     )
   )
 )
@@ -34,6 +38,9 @@ server <- function(input, output,session) {
   
   #ler resultados eleitorais e fazer menus
   load('summarized_results.Rdata')
+  zonas = st_read('SP_ZONAS_janeiro_2018/ZONAS_FINAL.shp') %>%
+    st_simplify(dTolerance = 0.001)
+  
   updateSelectInput(session,
                     'nivel', 
                     'Nível',
@@ -61,16 +68,42 @@ server <- function(input, output,session) {
   v = reactiveValues()
   observe({
     req(input$candidato)
-     v$map_data = elec_filt %>%
-       dplyr::filter(DS_CARGO_PERGUNTA == input$nivel,
-                     nome_pt == input$candidato) %>%
-       right_join(st_read('SP_ZONAS_janeiro_2018/ZONAS_FINAL.shp'),
-                  by = c('NR_ZONA' = 'ZEFINAL')) %>%
-       st_as_sf() %>%
-       st_simplify(dTolerance = 0.001) %>%
-       select(NR_ZONA,VOTOS) %>%
-       complete(VOTOS,fill=list(0)) %>%
-       st_as_sf()
+    if (input$contagem == 'Absoluta'){
+      v$map_data = elec_filt %>%
+        dplyr::filter(DS_CARGO_PERGUNTA == input$nivel,
+                      nome_pt == input$candidato) %>%
+        right_join(zonas,
+                   by = c('NR_ZONA' = 'ZEFINAL')) %>%
+        st_as_sf() %>%
+        select(NR_ZONA,VOTOS)
+    } else {
+      v$map_data = elec_filt %>%
+        dplyr::filter(DS_CARGO_PERGUNTA == input$nivel,
+                      nome_pt == input$candidato) %>%
+        right_join(zonas,
+                   by = c('NR_ZONA' = 'ZEFINAL')) %>%
+        st_as_sf() %>%
+        select(NR_ZONA,porcentagem) 
+    }
+
+  })
+  
+  #Preparar tabela de output
+  observe({
+    req(input$candidato)
+    output$tabela_votos = renderDataTable({
+      
+      elec_filt %>%
+        dplyr::filter(DS_CARGO_PERGUNTA == input$nivel,
+                      nome_pt == input$candidato) %>%
+        right_join(zonas,
+                   by = c('NR_ZONA' = 'ZEFINAL')) %>%
+        dplyr::filter(!is.na(NM_MUNICIPIO)) %>%
+        transmute(Município = NM_MUNICIPIO,
+                  Zona = NR_ZONA,
+                  `Votos totais` = VOTOS,
+                  `Votos (porcentagem)` = scales::percent(porcentagem))
+    })
   })
   
   
@@ -79,26 +112,41 @@ server <- function(input, output,session) {
     st_simplify(dTolerance = 0.001)
   
   #plotar mapa
-  output$plot1 <- renderPlot({
-    
+  output$plot1 = renderPlot({
+    req(v$map_data)
     compute_breaks = function(lims){
       seq(0,sqrt(lims[2]),length.out = 6)^2 %>% round() %>% unique
     }
     
-    #plot(1:10,1:10)
+    
     req(v$map_data)
+    if (input$contagem == 'Absoluta'){
     ggplot(v$map_data) +
       geom_sf(aes(fill=VOTOS, color= VOTOS),size=0.1) +
-      geom_sf(data=municipios,fill=NA,color='black',size=0.1) +
+      geom_sf(data=municipios,fill=NA,color='black',size=0.15) +
       scale_fill_viridis_c(aesthetics = c('colour','fill'),
                            trans='sqrt',
                            breaks = compute_breaks) +
       coord_sf(datum=NA) +
       theme_map() +
       theme(panel.grid = element_blank(),
-            legend.key.size = unit(30,'pt'),
+            legend.key.size = unit(.05,'npc'),
             legend.text = element_text(size=12),
             legend.title = element_text(size=12))
+    } else {
+      ggplot(v$map_data) +
+        geom_sf(aes(fill=porcentagem, color= porcentagem),size=0.1) +
+        geom_sf(data=municipios,fill=NA,color='black',size=0.15) +
+        scale_fill_viridis_c(aesthetics = c('colour','fill'),
+                             labels = scales::percent,
+                             guide = guide_colorbar(title='Porcentagem\nda zona')) +
+        coord_sf(datum=NA) +
+        theme_map() +
+        theme(panel.grid = element_blank(),
+              legend.key.size = unit(.05,'npc'),
+              legend.text = element_text(size=12),
+              legend.title = element_text(size=12))
+    }
   })
 }
 
