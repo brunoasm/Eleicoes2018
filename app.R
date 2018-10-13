@@ -79,14 +79,20 @@ server <- function(input, output,session) {
       v$map_data = elec_filt %>%
         dplyr::filter(DS_CARGO_PERGUNTA == input$nivel,
                       nome_pt == input$candidato) %>%
+        select(NR_ZONA,VOTOS) %>%
+        group_by(NR_ZONA) %>%
+        summarise(VOTOS = sum(VOTOS)) %>%
         right_join(zonas,
                    by = c('NR_ZONA' = 'ZEFINAL')) %>%
         st_as_sf() %>%
-        select(NR_ZONA,VOTOS)
+        select(NR_ZONA,VOTOS) 
+        
     } else {
       v$map_data = elec_filt %>%
         dplyr::filter(DS_CARGO_PERGUNTA == input$nivel,
                       nome_pt == input$candidato) %>%
+        group_by(NR_ZONA) %>%
+        summarise(porcentagem = sum(VOTOS)/sum(VOTOS/porcentagem)) %>%
         right_join(zonas,
                    by = c('NR_ZONA' = 'ZEFINAL')) %>%
         st_as_sf() %>%
