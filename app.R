@@ -80,12 +80,19 @@ server <- function(input, output,session) {
   
   #plotar mapa
   output$plot1 <- renderPlot({
+    
+    compute_breaks = function(lims){
+      seq(0,sqrt(lims[2]),length.out = 6)^2 %>% round() %>% unique
+    }
+    
     #plot(1:10,1:10)
     req(v$map_data)
     ggplot(v$map_data) +
       geom_sf(aes(fill=VOTOS, color= VOTOS)) +
       geom_sf(data=municipios,fill=NA,color='black',size=0.1) +
-      scale_fill_viridis_c(aesthetics = c('colour','fill')) +
+      scale_fill_viridis_c(aesthetics = c('colour','fill'),
+                           trans='sqrt',
+                           breaks = compute_breaks) +
       coord_sf(datum=NA) +
       theme_map() +
       theme(panel.grid = element_blank(),
