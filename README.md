@@ -50,5 +50,5 @@ save(elec_filt,file = 'summarized_results.Rdata')
 ```
 
 
-Feito por Bruno de Medeiros em Outubro/2018
+Criado por Bruno de Medeiros em Outubro/2018
 
