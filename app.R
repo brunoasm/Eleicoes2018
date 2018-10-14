@@ -114,7 +114,9 @@ server <- function(input, output,session) {
         transmute(Município = NM_MUNICIPIO,
                   Zona = NR_ZONA,
                   `Votos totais` = VOTOS,
-                  `Votos (porcentagem)` = scales::percent(porcentagem))
+                  `Votos (porcentagem)` = scales::percent(porcentagem) %>% 
+                    str_pad(side = 'left', pad = "0",width = max(str_length(.),1))
+                  )
     },
     options = list(lengthMenu = c(10, 25, 50,100), pageLength = 10))
   })
